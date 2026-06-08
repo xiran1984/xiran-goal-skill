@@ -8,7 +8,7 @@
 复制仓库地址，在 Claude Code 中告诉 Agent：
 
 ```
-https://github.com/xiran1984/xiran-goal-skill
+https://github.com/xiran1984/xiran-goal-skill，安装这个skill
 ```
 
 Agent 会自动完成安装。安装后用 `/xiran-goal` 开头即可使用。
