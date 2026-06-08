@@ -56,11 +56,54 @@ When drawing a condition tree:
 - Use `flowchart LR` only when the graph remains readable. If the user says it is hard to read, use an indented text tree.
 - Root node is the user's final goal.
 - Use as many first-level branches as the causal structure requires; prefer 3 to 8, but do not pad.
-- Depth follows usefulness: stop when the next action is concrete enough to execute or verify.
-- Uneven trees are correct when the real dependency structure is uneven.
+- **Each node must be under 20 characters.** 超过就说明你在写句子而非命名条件。
 - Use verbs and concrete methods when possible, not only abstract nouns.
 - Avoid duplicate sibling nodes.
 - Put risk-control branches near the condition they constrain, or last if it applies globally.
+
+### Depth Rule — 最硬的约束
+
+**禁止任何形式的均匀深度。** 三层均匀、两层均匀、每个一级分支下面都是N层——全部是错的。
+
+构建每个分支时单独问：**下一步动作是否已经足够明显？** 明显就停，不明显就继续拆。瓶颈分支深挖到底，辅助分支可以只有一层。
+
+构建完成后的自检：如果任何两个一级分支的深度相同，必须重做。树的深度分布看起来"不整齐"才是正确的。
+
+Bad（均匀三层——每个分支都是3级深）:
+
+```text
+目标
+├─ 分支A
+│  ├─ A1
+│  │  └─ A1a
+│  └─ A2
+│     └─ A2a
+├─ 分支B
+│  ├─ B1
+│  │  └─ B1a
+│  └─ B2
+│     └─ B2a
+└─ 分支C
+   ├─ C1
+   │  └─ C1a
+   └─ C2
+      └─ C2a
+```
+
+Better（真实因果——瓶颈深挖，辅助早停）:
+
+```text
+目标
+├─ 关键瓶颈
+│  ├─ 子条件1
+│  │  ├─ 为什么难：涉及习惯改变
+│  │  └─ 必须解决：否则其他分支无效
+│  └─ 子条件2
+├─ 辅助条件A
+│  └─ 一步可完成，不需再拆
+└─ 辅助条件B
+   └─ 动作明显，直接执行
+```
 
 ## Practicality Filter
 
@@ -83,21 +126,36 @@ Before finalizing a tree, run this check:
 
 Reflect those answers in the tree shape. Do not make the tree visually even if the answers are uneven.
 
-Bad:
+Bad（概念链——只堆标签不命名动作）:
 
 ```text
 社会能力 -> 高价值 -> 影响力 -> 个人品牌
 ```
 
-Better:
+Bad（均匀深度——每个分支都是2层，没有瓶颈意识）:
 
 ```text
 社会能力
-├─ 每周认识3个同领域可合作的人
-├─ 每月至少完成1个可展示成果
-├─ 守约交付以积累可信记录
-└─ 进入能带来机会的固定场域
+├─ 认识人
+│  └─ 每周认识3个人
+├─ 展示成果
+│  └─ 每月完成1个作品
+├─ 积累信任
+│  └─ 守约交付
+└─ 进入场域
+   └─ 参加行业活动
 ```
+
+Better（瓶颈深挖，辅助早停）:
+
+```text
+社会能力
+├─ 守约交付以积累可信记录
+├─ 每周认识3个同领域可合作的人
+├─ 进入能带来机会的固定场域
+│  ├─ 先贡献价值再建立关系
+│  └─ 为什么：机会密度决定成长速度
+└─ 每月至少完成1个可展示成果
 
 ## Execution Loop
 
@@ -141,121 +199,62 @@ When uncertain, prefer the stable default order in `Causal Decomposition Rules`,
 
 ## Complete Example
 
-For a goal like "maximize long-term survival and reproduction in modern society," a proper output looks like this:
+For a goal like "how to build unconditional confidence," a proper output looks like this:
 
 ---
 
 **Final Goal**
-In modern society, maximize your long-term probability of survival, resource acquisition, mate selection success, stable family formation, and offspring development.
+建立不依赖外部结果的自我确信——无论成败、他人评价、环境变化，内核保持稳定。
 
 **Assumptions**
-The path must be legal, sustainable, and executable — not short-term exploitation, manipulation, or extreme risk-taking.
+用户没有生存威胁、严重心理疾病或成瘾问题。追求可操作的行动框架而非哲学安慰。
 
 **Condition Tree**
 
 ```text
-Maximize Survival & Reproduction
-├─ Don't Get Eliminated: Avoid Irreversible Losses
-│  ├─ No illegal activity, no violence, no high-leverage gambling
-│  ├─ No addiction takeover: alcohol, gambling, drugs, porn, gaming, short-video all count
-│  ├─ Protect the physical baseline
-│  │  ├─ Sleep is consistently restorative
-│  │  ├─ Weight, fitness, sexual health within manageable range
-│  │  └─ Health checkups and basic medical awareness
-│  └─ Maintain minimum cash buffer
-│     └─ Goal is not wealth first — it's not being destroyed by one job loss, illness, or family emergency
+无条件自信
+├─ 切除条件依赖
+│  ├─ 写下：我的自信什么时候会崩塌
+│  └─ 对每个条件问：它消失了我还值不值得存在
 │
-├─ Resource Capacity: Make Society Continue to Need You
-│  ├─ Find one monetizable skill
-│  │  ├─ Someone is already willing to pay for it
-│  │  ├─ You can produce a demonstrable sample
-│  │  ├─ You can measurably improve within 6 months
-│  │  └─ It won't be cheaply replaced too quickly
-│  ├─ Place the skill in a real marketplace
-│  │  ├─ Job-seeking, freelancing, sales, content, products — pick at least one
-│  │  └─ Don't just study without entering real transactions
-│  ├─ Build income stability
-│  │  ├─ Primary income covers living expenses
-│  │  ├─ Gradually reduce dependence on a single boss, client, or platform
-│  │  └─ Reserve time for continued skill upgrading
-│  └─ Convert income into risk-resistant assets
-│     ├─ Save first, invest later
-│     └─ Don't use conspicuous consumption to prove yourself
+├─ 建立自证闭环 ⚠️ 核心瓶颈
+│  ├─ 自信 = 对自己的承诺 × 兑现率
+│  ├─ 每天做一个小到不可能失败的承诺并兑现
+│  │  ├─ 做到了 → 自我兑现率+1
+│  │  ├─ 没做到 → 降低难度，不自我攻击
+│  │  └─ 持续2-4周，根基从"别人怎么看我"转为"我能否信自己"
+│  └─ 区分可控与不可控
+│     ├─ 可控：投入质量、是否守约、是否复盘
+│     └─ 不可控：结果、他人评价、运气（只作为信息输入）
 │
-├─ Social Position: Make Others Willing to Entrust Opportunities and Relationships to You
-│  ├─ Trust record
-│  │  ├─ Do what you said you would
-│  │  ├─ Notify early when you can't deliver
-│  │  └─ Make results visible, not just explain intentions
-│  ├─ Enter higher-quality environments
-│  │  ├─ Go to better industries, cities, communities, learning environments
-│  │  └─ Find people stronger than you who are willing to exchange with you
-│  └─ Cut draining relationships
-│     └─ People who consistently lead you toward illegality, debt, addiction, broken trust, or internal depletion are not resources — they are risks
+├─ 提高失败容错率
+│  ├─ 增加尝试频率降低单次 stakes
+│  └─ 建立"失败→提取信息→再试"的肌肉记忆
 │
-├─ Mate Selection Competitiveness: Make the Right Person Willing to Choose You
-│  ├─ Minimum threshold
-│  │  ├─ Clean, healthy, normal physical condition
-│  │  ├─ Emotionally stable, not losing control
-│  │  ├─ Basic income or clear upward trajectory
-│  │  └─ Life is not a complete mess
-│  ├─ Long-term value
-│  │  ├─ Has a sense of responsibility
-│  │  ├─ Can handle conflict
-│  │  ├─ Has realistic commitment to family and children
-│  │  └─ Not just promising — can sustain action
-│  └─ Increase encounter probability
-│     ├─ Appear in settings where target partners also appear
-│     ├─ Build connections through friends, work, interests, learning
-│     └─ Initiate clearly, without harassment or manipulation
+├─ 切断社会比较
+│  └─ 唯一的比较对象是昨天的自己
 │
-├─ Partner Screening: This Matters More Than "Winning Someone Over"
-│  ├─ Must ask
-│  │  ├─ Do you want children?
-│  │  ├─ When do you want them?
-│  │  ├─ How do you view money, fidelity, parents, housework, childcare?
-│  │  └─ When conflict arises: communicate, withdraw, cold-shoulder, or attack?
-│  ├─ Must observe
-│  │  ├─ How has the person handled past commitments?
-│  │  ├─ Is the person long-term stable?
-│  │  └─ What is the quality of their close relationships?
-│  └─ Must exclude
-│     ├─ Addiction, violence, chronic deception
-│     ├─ Extreme debt and uncontrolled spending
-│     └─ Complete unwillingness to shoulder family responsibilities
+├─ 身体底线
+│  └─ 睡眠不足会系统性压低自信基线
 │
-├─ Relationship Maintenance: Reproduction Goals Have a High Probability of Dying Here
-│  ├─ Don't place short-term thrills above long-term trust
-│  ├─ Money, sex, parents, housework, children — must be discussable, not guessed
-│  ├─ Repair after conflict, don't accumulate resentment
-│  └─ If the relationship chronically destroys your life baseline, cut losses
-│
-└─ Raising Offspring: "Giving Birth" Is Not the Finish Line
-   ├─ Before having children
-   │  ├─ Both parties explicitly willing
-   │  ├─ Physical conditions permit
-   │  ├─ Income and living arrangements are basically sustainable
-   │  └─ At least one stable care plan exists
-   ├─ After having children
-   │  ├─ Provide the child with security and order
-   │  ├─ Invest time, not just money
-   │  ├─ Provide medical care, education, social environment
-   │  └─ Manage parents' own emotions and relational conflicts
-   └─ Intergenerational outcome
-      └─ Let children inherit better health, cognition, resources, relationships, and behavioral patterns
+└─ 防回退
+   └─ 每两周自检：自信有没有重新绑上外部条件
 ```
+
+注意树的形状：自证闭环是瓶颈所以挖到4层；切断社会比较和身体底线动作明显所以只有1层。
 
 **Priority Path**
 
-1. Clear landmines first: illegality, addiction, high debt, health collapse, cash flow rupture — these reset everything to zero.
-2. Find one skill the real market pays for, enter transactions quickly, don't stay stuck in the learning illusion.
-3. Use reliable delivery to accumulate trust records, enter higher-quality environments.
-4. Build mate selection competitiveness on "long-term reliability," not surface-level attraction.
-5. When screening partners, prioritize: reproductive willingness, sense of responsibility, money values, conflict handling, and stability.
-6. Enter child-rearing only after relationship stability — otherwise reproduction becomes a long-term risk amplifier.
+1. 立即：写下自信最容易崩塌的3个场景
+2. 第一周：每天一个极小承诺并兑现，开始自我兑现记录
+3. 2-4周：增加尝试密度，主动经历"失败但不毁灭"，改写失败后的自我对话
+4. 持续：每两周自检一次回退信号
 
 **Verification**
-If the path is working, you will see: life risks decreasing, cash flow stabilizing, skills converting to income, others trusting you more, social environments improving, suitable partner encounter probability rising, relationships becoming less draining, and conditions for raising children becoming increasingly realistic.
+- 被否定后1小时内恢复稳定，不产生持续自我攻击
+- 一次失败后第二天正常行动，不进入逃避模式
+- 看到同龄人成就时第一反应是"我能学什么"而非"我不行"
+- 独处时不觉得必须证明什么才能被自己接受
 
 ---
 
