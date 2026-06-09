@@ -1,6 +1,6 @@
 ---
 name: xiran-goal
-description: Use when the user gives a goal and wants Codex to drive toward a concrete result, reduce ambiguity, produce stable decomposition, or create a condition tree for execution.
+description: Use when the user gives a goal and wants the agent to drive toward a concrete result, reduce ambiguity, produce stable decomposition, or create a condition tree for execution. Trigger: /xiran-goal, "帮我分解目标", "怎么做才能", "如何实现", "分析条件", "拆解一下".
 ---
 
 # Xiran Goal
@@ -56,54 +56,11 @@ When drawing a condition tree:
 - Use `flowchart LR` only when the graph remains readable. If the user says it is hard to read, use an indented text tree.
 - Root node is the user's final goal.
 - Use as many first-level branches as the causal structure requires; prefer 3 to 8, but do not pad.
-- **Each node must be under 20 characters.** 超过就说明你在写句子而非命名条件。
+- Depth follows usefulness: stop when the next action is concrete enough to execute or verify.
+- Uneven trees are correct when the real dependency structure is uneven.
 - Use verbs and concrete methods when possible, not only abstract nouns.
 - Avoid duplicate sibling nodes.
 - Put risk-control branches near the condition they constrain, or last if it applies globally.
-
-### Depth Rule — 最硬的约束
-
-**禁止任何形式的均匀深度。** 三层均匀、两层均匀、每个一级分支下面都是N层——全部是错的。
-
-构建每个分支时单独问：**下一步动作是否已经足够明显？** 明显就停，不明显就继续拆。瓶颈分支深挖到底，辅助分支可以只有一层。
-
-构建完成后的自检：如果任何两个一级分支的深度相同，必须重做。树的深度分布看起来"不整齐"才是正确的。
-
-Bad（均匀三层——每个分支都是3级深）:
-
-```text
-目标
-├─ 分支A
-│  ├─ A1
-│  │  └─ A1a
-│  └─ A2
-│     └─ A2a
-├─ 分支B
-│  ├─ B1
-│  │  └─ B1a
-│  └─ B2
-│     └─ B2a
-└─ 分支C
-   ├─ C1
-   │  └─ C1a
-   └─ C2
-      └─ C2a
-```
-
-Better（真实因果——瓶颈深挖，辅助早停）:
-
-```text
-目标
-├─ 关键瓶颈
-│  ├─ 子条件1
-│  │  ├─ 为什么难：涉及习惯改变
-│  │  └─ 必须解决：否则其他分支无效
-│  └─ 子条件2
-├─ 辅助条件A
-│  └─ 一步可完成，不需再拆
-└─ 辅助条件B
-   └─ 动作明显，直接执行
-```
 
 ## Practicality Filter
 
@@ -117,7 +74,7 @@ Every leaf node should pass at least one of these tests:
 
 If a node is only a concept label, expand it into practical subconditions or replace it with a concrete method.
 
-Before finalizing a tree, run this check:
+Before finalizing a tree, run this check 🔴:
 
 - Which branch is the current bottleneck?
 - Which branch can stop early because the next action is obvious?
@@ -126,36 +83,21 @@ Before finalizing a tree, run this check:
 
 Reflect those answers in the tree shape. Do not make the tree visually even if the answers are uneven.
 
-Bad（概念链——只堆标签不命名动作）:
+Bad:
 
 ```text
 社会能力 -> 高价值 -> 影响力 -> 个人品牌
 ```
 
-Bad（均匀深度——每个分支都是2层，没有瓶颈意识）:
+Better:
 
 ```text
 社会能力
-├─ 认识人
-│  └─ 每周认识3个人
-├─ 展示成果
-│  └─ 每月完成1个作品
-├─ 积累信任
-│  └─ 守约交付
-└─ 进入场域
-   └─ 参加行业活动
-```
-
-Better（瓶颈深挖，辅助早停）:
-
-```text
-社会能力
-├─ 守约交付以积累可信记录
 ├─ 每周认识3个同领域可合作的人
-├─ 进入能带来机会的固定场域
-│  ├─ 先贡献价值再建立关系
-│  └─ 为什么：机会密度决定成长速度
-└─ 每月至少完成1个可展示成果
+├─ 每月至少完成1个可展示成果
+├─ 守约交付以积累可信记录
+└─ 进入能带来机会的固定场域
+```
 
 ## Execution Loop
 
@@ -172,15 +114,15 @@ Report only what helps the user move forward.
 
 ## Clarification Rule
 
-Ask a question only when one missing fact would materially change the output and a reasonable assumption would be risky.
+⚠️ Ask a question only when one missing fact would materially change the output and a reasonable assumption would be risky.
 
 If asking, ask exactly one concise question.
 
 Otherwise proceed with explicit assumptions.
 
-## Anti-Drift Rules
+## Anti-Drift Rules（反例黑名单）
 
-Do not:
+以下 12 条是 xiran-goal 明确禁止的行为，每条都是实战中踩过的坑：
 
 - Expand endlessly into philosophy.
 - Change the causal judgment between similar runs without new facts.
@@ -197,64 +139,62 @@ Do not:
 
 When uncertain, prefer the stable default order in `Causal Decomposition Rules`, then let the actual causal structure determine branch count and depth.
 
+## Failure Modes & Fallbacks
+
+if-then 分支表——遇到以下情况不要卡住或跳过，按表执行：
+
+| 触发条件 | 一线处理 | 仍失败时 |
+|---|---|---|
+| 用户目标太模糊，无法分解 | 问一个精确澄清问题（遵守 Clarification Rule） | 列出 2-3 个最可能的解读，各给一句话方案，让用户选 |
+| 因果顺序不适用当前领域 | 选择最直接的顺序，一句话声明原因 | 回退到通用分解：输入→加工→输出→验证 |
+| 条件树 >8 个一级分支 | 合并相似分支为更概括的条件组 | 优先保留瓶颈分支，辅助分支可合并为一句 |
+| 验证标准无法量化 | 改用"可观察的行为变化"代替数字指标 | 明确声明"无法量化验证，以下为定性判断" |
+| 用户对树结构有异议 | 问"哪个分支你觉得不对"，只改那一个 | 保留其余分支，标记争议分支待确认 |
+| 目标是简单操作问题（如"怎么写贪吃蛇"） | 跳过 Causal Decomposition Rules 的 7 层顺序，直接用执行步骤拆解 | —（此类目标到执行层即可） |
+
 ## Complete Example
 
-For a goal like "how to build unconditional confidence," a proper output looks like this:
+For a goal like "how to accumulate high-income skills," the output looks like this. 注意树的形状：瓶颈分支深挖到4层，辅助分支只到1-2层；每个节点不超过20字；所有分支深度不同。
 
 ---
 
 **Final Goal**
-建立不依赖外部结果的自我确信——无论成败、他人评价、环境变化，内核保持稳定。
+拥有一项让市场持续付高价的技能，不依赖单一雇主。
 
 **Assumptions**
-用户没有生存威胁、严重心理疾病或成瘾问题。追求可操作的行动框架而非哲学安慰。
+合法路径；技能积累需要时间，不做短期暴富假设。
 
 **Condition Tree**
 
 ```text
-无条件自信
-├─ 切除条件依赖
-│  ├─ 写下：我的自信什么时候会崩塌
-│  └─ 对每个条件问：它消失了我还值不值得存在
-│
-├─ 建立自证闭环 ⚠️ 核心瓶颈
-│  ├─ 自信 = 对自己的承诺 × 兑现率
-│  ├─ 每天做一个小到不可能失败的承诺并兑现
-│  │  ├─ 做到了 → 自我兑现率+1
-│  │  ├─ 没做到 → 降低难度，不自我攻击
-│  │  └─ 持续2-4周，根基从"别人怎么看我"转为"我能否信自己"
-│  └─ 区分可控与不可控
-│     ├─ 可控：投入质量、是否守约、是否复盘
-│     └─ 不可控：结果、他人评价、运气（只作为信息输入）
-│
-├─ 提高失败容错率
-│  ├─ 增加尝试频率降低单次 stakes
-│  └─ 建立"失败→提取信息→再试"的肌肉记忆
-│
-├─ 切断社会比较
-│  └─ 唯一的比较对象是昨天的自己
-│
-├─ 身体底线
-│  └─ 睡眠不足会系统性压低自信基线
-│
-└─ 防回退
-   └─ 每两周自检：自信有没有重新绑上外部条件
+积累高收入技能
+├─ 选对技能方向
+│  ├─ 三个条件：有人付钱、不易替代、能做样品
+│  └─ 交叉领域溢价更高
+├─ 进入真实交易 ⚠️ 最大瓶颈
+│  ├─ 学到能卖的最低水平就立刻卖
+│  ├─ 接受前几次交付可能不合格
+│  ├─ 定价策略
+│  │  ├─ 第一个客户可以很低甚至免费
+│  │  └─ 目的是换可展示的案例和推荐
+│  └─ 客户反馈比课程更精准
+├─ 把技能变成可脱离时间的资产
+│  └─ 一对一服务 → 一对多产品
+└─ 防贬值
+   └─ 单一客户收入不超过50%
 ```
-
-注意树的形状：自证闭环是瓶颈所以挖到4层；切断社会比较和身体底线动作明显所以只有1层。
 
 **Priority Path**
 
-1. 立即：写下自信最容易崩塌的3个场景
-2. 第一周：每天一个极小承诺并兑现，开始自我兑现记录
-3. 2-4周：增加尝试密度，主动经历"失败但不毁灭"，改写失败后的自我对话
-4. 持续：每两周自检一次回退信号
+1. 列出3个有基础且市场付钱的方向，选交叉领域
+2. 找到第一个付费客户（可低价），进入真实交易
+3. 交付3-5个案例后从反馈中迭代并提价
+4. 一年后思考如何把服务变成产品
 
 **Verification**
-- 被否定后1小时内恢复稳定，不产生持续自我攻击
-- 一次失败后第二天正常行动，不进入逃避模式
-- 看到同龄人成就时第一反应是"我能学什么"而非"我不行"
-- 独处时不觉得必须证明什么才能被自己接受
+- 有人未经过推销主动来找你付费
+- 时薪在上升而非被压低
+- 请假一个月，至少部分收入不中断
 
 ---
 
